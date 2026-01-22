@@ -1,6 +1,8 @@
-# McpAgent demo
+# Notion Remote MCP
 
-A minimal example showing an `McpAgent` running in Wrangler, being accessed from the [MCP Inspector](https://github.com/modelcontextprotocol/inspector).
+This remote MCP Agent runs in wrangler and is deployed to cloudflare worker.
+Tools implemented:  
+ `list pages`, `create page`, `fetch page`, `list authenticated user`
 
 ## Instruction
 
@@ -9,11 +11,7 @@ npm install
 npm start
 ```
 
-This will start an MCP server on `http://localhost:5174/mcp` and open the MCP inspector in your browser.
-
-Set your **Transport Type** to **Streamable HTTP** and your **URL** to `http://localhost:5174/mcp`, then click **Connect**. You should see the following:
-
-![Image](https://github.com/user-attachments/assets/ef31b754-755d-4022-9549-382854a19f77)
+This will start an MCP server on `http://localhost:5174/mcp`
 
 Inside your `McpAgent`'s `init()` method, you can define resources, tools, etc:
 
