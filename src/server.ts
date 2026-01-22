@@ -7,16 +7,7 @@ import icon from "./mcp-icon.svg";
 export class NotionMCP extends McpAgent<Env, {}> {
   server = new McpServer({
     name: "notion-remote-mcp",
-    version: "1.0.0",
-    // Add icons and website URL to the server implementation
-    icons: [
-      {
-        src: icon,
-        sizes: ["any"],
-        mimeType: "image/svg+xml"
-      }
-    ],
-    websiteUrl: "https://github.com/cloudflare/agents"
+    version: "0.0.1",
   });
 
   async init() {
@@ -261,6 +252,7 @@ export class NotionMCP extends McpAgent<Env, {}> {
     );
   }
 
+  
   onError(_: unknown, error?: unknown): void | Promise<void> {
     console.error("NotionMCP initialization error:", error);
 
