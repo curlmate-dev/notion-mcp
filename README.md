@@ -12,7 +12,7 @@ Tools implemented:
         "mcp-remote",
         "https://notion-mcp.curlmate.workers.dev/mcp",
         "--header",
-        "access-token: your Notion Access Token from [https://curlmate.dev]https://curlmate.dev"
+        "access-token: your Notion Access Token from https://curlmate.dev"
       ]
     }
 ```
