@@ -13,8 +13,8 @@ export class NotionMCP extends McpAgent<Env, {}> {
     const res = await fetch("https://curlmate.dev/api/token", {
       method: "GET",
       headers: {
-        Authorization: `Bearer ${requestInfo.headers["Authorization"]}`,
-        "x-connection": requestInfo.headers["x-access-token"],
+        Authorization: `Bearer ${requestInfo.headers["access-token"]}`,
+        "x-connection": requestInfo.headers["x-connection"],
       }
     })
 
