@@ -14,7 +14,7 @@ export class NotionMCP extends McpAgent<Env, {}> {
       method: "GET",
       headers: {
         Authorization: `Bearer ${requestInfo.headers["access-token"]}`,
-        "x-connection": requestInfo.headers["x-access-token"],
+        "x-connection": requestInfo.headers["x-connection"],
       }
     })
 
