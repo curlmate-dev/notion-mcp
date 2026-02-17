@@ -9,6 +9,24 @@ export class NotionMCP extends McpAgent<Env, {}> {
     version: "0.0.1",
   });
 
+  getAccessToken = async({ requestInfo}: { requestInfo: Record<string, string>}) => {
+    const res = await fetch("https://curlmate.dev/api/token", {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${requestInfo.headers["access-token"]}`,
+        "x-connection": requestInfo.headers["x-access-token"],
+      }
+    })
+
+    if (!res.ok) {
+      return {
+        error: await res.text(),
+      }
+    }
+
+    return await res.json()
+  }
+
   async init() {
     this.server.registerTool(
       "get-notion-page-format",
@@ -16,8 +34,7 @@ export class NotionMCP extends McpAgent<Env, {}> {
         description: "get the sample page format",
         inputSchema: { }
       },
-      async ({  }) => {
-
+      async ({} , { requestInfo }) => {
         return {
           content: [
             {
@@ -97,10 +114,11 @@ export class NotionMCP extends McpAgent<Env, {}> {
         inputSchema: { }
       },
       async ({ }, { requestInfo }) => {
+        const res = await this.getAccessToken({ requestInfo })
         const response = await fetch("https://api.notion.com/v1/search", {
           method: "POST",
           headers: {
-            "Authorization": `Bearer ${requestInfo?.headers["access-token"]}`,
+            "Authorization": `Bearer ${res.accessToken}`,
             "Content-Type": "application/json",
             "Notion-Version": "2022-06-28"
           },
@@ -144,10 +162,11 @@ export class NotionMCP extends McpAgent<Env, {}> {
         inputSchema: {  pageData: z.string()}
       },
       async ({  pageData }, { requestInfo }) => {
+        const res = await this.getAccessToken({ requestInfo })
         const response = await fetch("https://api.notion.com/v1/pages", {
           method: "POST",
           headers: {
-            "Authorization": `Bearer ${requestInfo?.headers["access-token"]}`,
+            "Authorization": `Bearer ${res.accessToken}`,
             "Content-Type": "application/json",
             "Notion-Version": "2022-06-28"
           },
@@ -182,10 +201,11 @@ export class NotionMCP extends McpAgent<Env, {}> {
         inputSchema: { pageId: z.string()}
       },
       async ({ pageId }, { requestInfo }) => {
+        const res = await this.getAccessToken({ requestInfo })
         const response = await fetch(`https://api.notion.com/v1/pages/${pageId}`, {
           method: "GET",
           headers: {
-            "Authorization": `Bearer ${requestInfo?.headers["access-token"]}`,
+            "Authorization": `Bearer ${res.accessToken}`,
             "Content-Type": "application/json",
             "Notion-Version": "2022-06-28"
           }
@@ -219,10 +239,11 @@ export class NotionMCP extends McpAgent<Env, {}> {
         inputSchema: { }
       },
       async ({}, {requestInfo}) => {
+        const res = await this.getAccessToken({ requestInfo })
         const response = await fetch("https://api.notion.com/v1/users/me", {
           method: "GET",
           headers: {
-            "Authorization": `Bearer ${requestInfo?.headers["access-token"]}`,
+            "Authorization": `Bearer ${res.accessToken}`,
             "Content-Type": "application/json",
             "Notion-Version": "2022-06-28"
           }
