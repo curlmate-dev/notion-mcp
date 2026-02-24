@@ -3,29 +3,44 @@ import { McpAgent } from "agents/mcp";
 import { z } from "zod";
 
 
+const CURLMATE_BASE_URL = "https://api.curlmate.dev"
+
+const zAccessTokenResponse = z.object({
+  accessToken: z.string(),
+})
+
+const getAccessToken = async({ jwt, connection}: { jwt: string | undefined, connection: string | undefined}) => {
+  if (!jwt) {
+    return new Response("JWT missing", { status: 401 });
+  }
+
+  if (!connection) {
+    return new Response("Connection missing", { status: 400});
+  }
+
+  const res = await fetch(`${CURLMATE_BASE_URL}/token`, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${jwt}`,
+      "x-connection": connection,
+    }
+  })
+
+  if (!res.ok) { 
+    return new Response(`${await res.text()}`, { status: res.status});
+  }
+
+  const data = zAccessTokenResponse.parse(await res.json());
+  return data.accessToken;
+}
+
 export class NotionMCP extends McpAgent<Env, {}> {
   server = new McpServer({
     name: "notion-remote-mcp",
     version: "0.0.1",
   });
 
-  getAccessToken = async({ requestInfo}: { requestInfo: Record<string, string>}) => {
-    const res = await fetch("https://curlmate.dev/api/token", {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${requestInfo.headers["access-token"]}`,
-        "x-connection": requestInfo.headers["x-connection"],
-      }
-    })
 
-    if (!res.ok) {
-      return {
-        error: await res.text(),
-      }
-    }
-
-    return await res.json()
-  }
 
   async init() {
     this.server.registerTool(
@@ -114,11 +129,14 @@ export class NotionMCP extends McpAgent<Env, {}> {
         inputSchema: { }
       },
       async ({ }, { requestInfo }) => {
-        const res = await this.getAccessToken({ requestInfo })
+        const jwt = requestInfo?.headers["access-token"] as string | undefined
+        const connection = requestInfo?.headers["x-connection"] as string | undefined
+        const accessToken = await getAccessToken({ jwt, connection });
+
         const response = await fetch("https://api.notion.com/v1/search", {
           method: "POST",
           headers: {
-            "Authorization": `Bearer ${res.accessToken}`,
+            "Authorization": `Bearer ${accessToken}`,
             "Content-Type": "application/json",
             "Notion-Version": "2022-06-28"
           },
@@ -134,24 +152,14 @@ export class NotionMCP extends McpAgent<Env, {}> {
           })
         })
 
-        if (!response.ok) {
+         if (!response.ok) {
           return {
-            content: [
-              {
-                text: JSON.stringify(await response.text()),
-                type: "text"
-              }
-            ]
+            content: [{ text: JSON.stringify(await response.text()), type: "text" }]
           }
         }
 
         return {
-          content: [
-            {
-              text: JSON.stringify(await response.json()),
-              type: "text"
-            }
-          ]
+          content: [{ text: JSON.stringify(await response.json()), type: "text" }]
         };
       }
     );
@@ -162,11 +170,14 @@ export class NotionMCP extends McpAgent<Env, {}> {
         inputSchema: {  pageData: z.string()}
       },
       async ({  pageData }, { requestInfo }) => {
-        const res = await this.getAccessToken({ requestInfo })
+        const jwt = requestInfo?.headers["access-token"] as string | undefined
+        const connection = requestInfo?.headers["x-connection"] as string | undefined
+        const accessToken = await getAccessToken({ jwt, connection });
+
         const response = await fetch("https://api.notion.com/v1/pages", {
           method: "POST",
           headers: {
-            "Authorization": `Bearer ${res.accessToken}`,
+            "Authorization": `Bearer ${accessToken}`,
             "Content-Type": "application/json",
             "Notion-Version": "2022-06-28"
           },
@@ -201,11 +212,14 @@ export class NotionMCP extends McpAgent<Env, {}> {
         inputSchema: { pageId: z.string()}
       },
       async ({ pageId }, { requestInfo }) => {
-        const res = await this.getAccessToken({ requestInfo })
+        const jwt = requestInfo?.headers["access-token"] as string | undefined
+        const connection = requestInfo?.headers["x-connection"] as string | undefined
+        const accessToken = await getAccessToken({ jwt, connection });
+
         const response = await fetch(`https://api.notion.com/v1/pages/${pageId}`, {
           method: "GET",
           headers: {
-            "Authorization": `Bearer ${res.accessToken}`,
+            "Authorization": `Bearer ${accessToken}`,
             "Content-Type": "application/json",
             "Notion-Version": "2022-06-28"
           }
@@ -239,11 +253,14 @@ export class NotionMCP extends McpAgent<Env, {}> {
         inputSchema: { }
       },
       async ({}, {requestInfo}) => {
-        const res = await this.getAccessToken({ requestInfo })
+        const jwt = requestInfo?.headers["access-token"] as string | undefined
+        const connection = requestInfo?.headers["x-connection"] as string | undefined
+        const accessToken = await getAccessToken({ jwt, connection });
+
         const response = await fetch("https://api.notion.com/v1/users/me", {
           method: "GET",
           headers: {
-            "Authorization": `Bearer ${res.accessToken}`,
+            "Authorization": `Bearer ${accessToken}`,
             "Content-Type": "application/json",
             "Notion-Version": "2022-06-28"
           }
@@ -251,22 +268,12 @@ export class NotionMCP extends McpAgent<Env, {}> {
 
         if (!response.ok) {
           return {
-            content: [
-              {
-                text: JSON.stringify(await response.text()),
-                type: "text"
-              }
-            ]
+            content: [{ text: JSON.stringify(await response.text()), type: "text" }]
           }
         }
 
         return {
-          content: [
-            {
-              text: JSON.stringify(await response.json()),
-              type: "text"
-            }
-          ]
+          content: [{ text: JSON.stringify(await response.json()), type: "text" }]
         };
       }
     );
